@@ -1,152 +1,165 @@
 package cafe.serenity.w7.ui
 
-import android.content.ClipData
-import android.content.ClipDescription
-import android.os.Build
-import android.util.Log
-import android.view.View
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.draganddrop.dragAndDropSource
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.draganddrop.mimeTypes
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import kotlin.math.roundToInt
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 
-//@OptIn(ExperimentalFoundationApi::class)
-//@Composable
-//fun DragScreen(navController: NavController) {
-//
-//    // [START android_compose_drag_and_drop_1]
-//    Modifier.dragAndDropSource {
-//        detectTapGestures(onLongPress = {
-//            // Transfer data here.
-//            Log.e("AAA", "onLongPress")
-//        })
-//    }
-//    // [END android_compose_drag_and_drop_1]
-//
-//    // [START android_compose_drag_and_drop_2]
-//    Modifier.dragAndDropSource {
-//        detectTapGestures(onLongPress = {
-//            startTransfer(
-//                DragAndDropTransferData(
-//                    ClipData.newPlainText(
-//                        "image Url", "AAAAAAAA"
-//                    )
-//                )
-//            )
-//        })
-//    }
-//    // [END android_compose_drag_and_drop_2]
-//
-//    // [START android_compose_drag_and_drop_3]
-//    Modifier.dragAndDropSource {
-//        detectTapGestures(onLongPress = {
-//            startTransfer(
-//                DragAndDropTransferData(
-//                    ClipData.newPlainText(
-//                        "image Url", "AAAAAAAAAA"
-//                    ),
-//                    flags = View.DRAG_FLAG_GLOBAL
-//                )
-//            )
-//        })
-//    }
-//    // [END android_compose_drag_and_drop_3]
-//
-//    // [START android_compose_drag_and_drop_4]
-//    val callback = remember {
-//        object : DragAndDropTarget {
-//            override fun onDrop(event: DragAndDropEvent): Boolean {
-//                // Parse received data
-//                return true
-//            }
-//        }
-//    }
-//    // [END android_compose_drag_and_drop_4]
-//
-//    // [START android_compose_drag_and_drop_5]
-//    Modifier.dragAndDropTarget(
-//        shouldStartDragAndDrop = { event ->
-//            event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
-//        }, target = callback
-//    )
-//    // [END android_compose_drag_and_drop_5]
-//
-//    // [START android_compose_drag_and_drop_6]
-//    object : DragAndDropTarget {
-//        override fun onStarted(event: DragAndDropEvent) {
-//            // When the drag event starts
-//        }
-//
-//        override fun onEntered(event: DragAndDropEvent) {
-//            // When the dragged object enters the target surface
-//        }
-//
-//        override fun onEnded(event: DragAndDropEvent) {
-//            // When the drag event stops
-//        }
-//
-//        override fun onExited(event: DragAndDropEvent) {
-//            // When the dragged object exits the target surface
-//        }
-//
-//        override fun onDrop(event: DragAndDropEvent): Boolean = true
-//    }
-//    // [END android_compose_drag_and_drop_6]
-//}
+/*
+Making only the items in the first section move via drag and drop
+ */
+
+@Composable
+fun MyList() {
+    var list1 by remember { mutableStateOf(List(5) { it }) }
+    val list2 by remember { mutableStateOf(List(5) { it + 5 }) }
+    val stateList = rememberLazyListState()
+
+    var draggingItemIndex: Int? by remember {
+        mutableStateOf(null)
+    }
+
+    var delta: Float by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var draggingItem: LazyListItemInfo? by remember {
+        mutableStateOf(null)
+    }
+
+    val onMove = { fromIndex: Int, toIndex: Int ->
+        list1 = list1.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .pointerInput(key1 = stateList) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        stateList.layoutInfo.visibleItemsInfo
+                            .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
+                            ?.also {
+                                (it.contentType as? DraggableItem)?.let { draggableItem ->
+                                    draggingItem = it
+                                    draggingItemIndex = draggableItem.index
+                                }
+                            }
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        delta += dragAmount.y
+
+                        val currentDraggingItemIndex =
+                            draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                        val currentDraggingItem =
+                            draggingItem ?: return@detectDragGesturesAfterLongPress
+
+                        val startOffset = currentDraggingItem.offset + delta
+                        val endOffset =
+                            currentDraggingItem.offset + currentDraggingItem.size + delta
+                        val middleOffset = startOffset + (endOffset - startOffset) / 2
+
+                        val targetItem =
+                            stateList.layoutInfo.visibleItemsInfo.find { item ->
+                                middleOffset.toInt() in item.offset..item.offset + item.size &&
+                                        currentDraggingItem.index != item.index &&
+                                        item.contentType is DraggableItem
+                            }
+
+                        if (targetItem != null) {
+                            val targetIndex = (targetItem.contentType as DraggableItem).index
+                            onMove(currentDraggingItemIndex, targetIndex)
+                            draggingItemIndex = targetIndex
+                            delta += currentDraggingItem.offset - targetItem.offset
+                            draggingItem = targetItem
+                        }
+                    },
+                    onDragEnd = {
+                        draggingItem = null
+                        draggingItemIndex = null
+                        delta = 0f
+                    },
+                    onDragCancel = {
+                        draggingItem = null
+                        draggingItemIndex = null
+                        delta = 0f
+                    },
+                )
+            },
+        state = stateList,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(text = "Title 1", fontSize = 30.sp)
+        }
+
+        itemsIndexed(
+            items = list1,
+            contentType = { index, _ -> DraggableItem(index = index) }) { index, item ->
+            val modifier = if (draggingItemIndex == index) {
+                Modifier
+                    .zIndex(1f)
+                    .graphicsLayer {
+                        translationY = delta
+                    }
+            } else {
+                Modifier
+            }
+            Item(
+                modifier = modifier,
+                index = item,
+            )
+        }
+
+        item {
+            Text(text = "Title 2", fontSize = 30.sp)
+        }
+
+        itemsIndexed(list2, key = { _, item -> item }) { _, item ->
+            Item(index = item)
+        }
+
+    }
+}
 
 
 @Composable
-fun DragScreen(navController: NavController) {
-    Box(modifier = Modifier.fillMaxSize().padding(48.dp)) {
-        var offsetX by remember {
-            mutableStateOf(0f)
-        }
-        var offsetY by remember {
-            mutableStateOf(0f)
-        }
-
-        Box(
-            Modifier
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                .background(Color.Blue)
-                .size(50.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        offsetX += dragAmount.x
-                        offsetY += dragAmount.y
-                    }
-                }
-//                .pointerInput {
-//                    detectDragGestures { change, dragAmount ->
-
-//                    }
-//                }
+private fun Item(modifier: Modifier = Modifier, index: Int) {
+    Card(
+        modifier = modifier
+    ) {
+        Text(
+            "Item $index",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
         )
     }
+}
+
+data class DraggableItem(val index: Int)
+
+@Composable
+fun DragScreen() {
+    MyList()
 }

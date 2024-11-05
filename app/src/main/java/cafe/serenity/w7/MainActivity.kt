@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import cafe.serenity.w7.ui.CircularScreen
 import cafe.serenity.w7.ui.DragScreen
 import cafe.serenity.w7.ui.ScoreScreen
 import cafe.serenity.w7.ui.WonderChoiceScreen
@@ -77,7 +78,8 @@ fun NavGraph(navController: NavHostController) {
             WondersInGameScreen(navController)
         }
         composable<Route.DragRoute> {
-            DragScreen(navController)
+//            DragScreen()
+            CircularScreen()
         }
     }
 }
