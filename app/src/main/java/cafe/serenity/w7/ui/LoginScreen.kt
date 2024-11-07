@@ -20,7 +20,6 @@ import androidx.navigation.NavController
 
 @Composable
 fun LoginScreen(navController: NavController) {
-//    Text("Login screen")
     Column(
         modifier = Modifier
             .fillMaxSize()

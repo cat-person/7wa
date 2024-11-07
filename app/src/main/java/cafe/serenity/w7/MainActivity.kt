@@ -18,12 +18,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import cafe.serenity.w7.ui.CircularScreen
-import cafe.serenity.w7.ui.DragScreen
 import cafe.serenity.w7.ui.ScoreScreen
 import cafe.serenity.w7.ui.WonderChoiceScreen
 import cafe.serenity.w7.ui.WonderScreen
 import cafe.serenity.w7.ui.WondersInGameScreen
+import cafe.serenity.w7.ui.SegmentScreen
 import cafe.serenity.w7.ui.theme.W7Theme
 import kotlinx.serialization.Serializable
 
@@ -79,7 +78,11 @@ fun NavGraph(navController: NavHostController) {
         }
         composable<Route.DragRoute> {
 //            DragScreen()
-            CircularScreen()
+//            CircularScreen()
+            SegmentScreen()
+        }
+        composable<Route.SegmentRoute> {
+            SegmentScreen()
         }
     }
 }
@@ -95,6 +98,8 @@ sealed interface Route {
     data object WondersInGameRoute : Route
     @Serializable
     data object DragRoute : Route
+    @Serializable
+    data object SegmentRoute : Route
 }
 
 
