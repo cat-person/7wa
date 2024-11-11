@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -57,38 +58,38 @@ fun SegmentScreen() {
     ) {
         Segment(
             modifier = Modifier
-                .width(100.dp)
-                .height(100.dp)
+                .width(400.dp)
+                .height(400.dp)
                 .graphicsLayer {
                     clip = true
 
-
                     shape = GenericShape { size: Size, _ ->
-                        val width = size.width
-                        val height = size.height
+                        arcTo(Rect(100f, 0f, 900f, 600f), -150f, 120f, false)
 
-                        val cornerRadiusPx = 50f
-                        val gapCornerRadiusPx = 50f
-                        val gapSizePx = 50f
-                        val concavityFactor = 1.1f
+                        arcTo(Rect(810f, 150f, 856f, 200f), -60f, 90f, false)
 
-                        moveTo(0f, cornerRadiusPx)
-                        quadraticTo(0f, 0f, cornerRadiusPx, 0f)
+                        arcTo(Rect(760f, 220f, 800f, 260f), 30f, 110f, false)
 
-                        lineTo(width - gapSizePx - gapCornerRadiusPx, 0f)
-                        quadraticTo(width - gapSizePx, 0f, width - gapSizePx, gapCornerRadiusPx)
+                        arcTo(Rect(220f, 200f, 780f, 400f), -30f, -120f, false)
 
-                        quadraticTo(width - concavityFactor*gapSizePx, concavityFactor*gapSizePx, width - gapCornerRadiusPx, gapSizePx)
+//                        arcTo(Rect(0f, 200f, 900f, 800f), -150f, 180f, false)
 
-                        quadraticTo(width, gapSizePx, width, gapSizePx + gapCornerRadiusPx)
 
-                        lineTo(width, height - cornerRadiusPx)
-                        quadraticTo(width, height, width - cornerRadiusPx, height)
 
-                        lineTo(cornerRadiusPx, height)
-                        quadraticTo(0f, height, 0f, height - cornerRadiusPx)
+//                        lineTo( 150f, 0f)
+//                        quadraticTo(width - gapSizePx, 0f, width - gapSizePx, gapCornerRadiusPx)
+//
+//                        quadraticTo(width - concavityFactor*gapSizePx, concavityFactor*gapSizePx, width - gapCornerRadiusPx, gapSizePx)
+//
+//                        quadraticTo(width, gapSizePx, width, gapSizePx + gapCornerRadiusPx)
 
-                        lineTo(0f, cornerRadiusPx)
+//                        lineTo(150f, 40f)
+////                        quadraticTo(width, height, width - cornerRadiusPx, height)
+//
+//                        lineTo(-150f, 40f)
+////                        quadraticTo(0f, height, 0f, height - cornerRadiusPx)
+//
+//                        lineTo(-150f, 0f)
                     }
                 }
                 .background(Color.LightGray),
