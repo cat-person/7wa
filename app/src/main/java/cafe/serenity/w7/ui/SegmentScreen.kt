@@ -17,7 +17,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 
 @Composable
 fun Segment(modifier: Modifier) {
@@ -52,25 +54,34 @@ fun Segment(modifier: Modifier) {
 
 @Composable
 fun SegmentScreen() {
+    SegmentView(100.dp, 20.dp, -150f, 120f)
+}
+
+@Composable
+fun SegmentView(externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
+        val width = externalRadius * 2f
+        val height = externalRadius * 2f
         Segment(
             modifier = Modifier
-                .width(400.dp)
-                .height(400.dp)
+                .width(width)
+                .height(height)
+                .background(Color.Magenta)
                 .graphicsLayer {
                     clip = true
-
                     shape = GenericShape { size: Size, _ ->
-                        arcTo(Rect(100f, 0f, 900f, 600f), -150f, 120f, false)
-
-                        arcTo(Rect(810f, 150f, 856f, 200f), -60f, 90f, false)
-
-                        arcTo(Rect(760f, 220f, 800f, 260f), 30f, 110f, false)
-
-                        arcTo(Rect(220f, 200f, 780f, 400f), -30f, -120f, false)
+                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
+                        arcTo(
+                            Rect(segmentWidth.toPx(),
+                                segmentWidth.toPx(),
+                                (2f * externalRadius - segmentWidth).toPx(),
+                                (2f * externalRadius - segmentWidth).toPx()),
+                            startAngleDegrees + sweepAngleDegrees,
+                            -sweepAngleDegrees,
+                            false)
 
 //                        arcTo(Rect(0f, 200f, 900f, 800f), -150f, 180f, false)
 
