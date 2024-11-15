@@ -1,5 +1,6 @@
 package cafe.serenity.w7.ui
 
+import android.graphics.PointF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,48 +14,49 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 
 @Composable
-fun Segment(modifier: Modifier) {
+fun Segment(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
     Canvas(modifier = modifier
         ) {
-//        drawRect(
-//            color = Color.Magenta,
-//            size = size / 2f
-//        )
 
+        val width = externalRadius * 2f
+        val height = externalRadius * 2f
 
-//        drawCircle(
-//            color = Color.Magenta,
-//            radius = 48.dp.toPx()
-//        )
+        drawRect(Color.Blue, Offset(0f, 0f), Size((segmentWidth / 10f).toPx(), segmentWidth.toPx() / 10f))
 
-//        drawArc(
-//            color = Color.DarkGray,
-//            startAngle = -90f,
-//            sweepAngle = 40f,
-//            useCenter = true
-//        )
+//        drawPath(Path().apply {
+//            arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
 //
-//        drawArc(
-//            color = Color.Red,
-//            startAngle = -90f,
-//            sweepAngle = 40f,
-//            useCenter = true,
-//            size = Size(20f, 20f))
+////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), -90f, 90f, false)
+////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), 0f, 90f, false)
+//
+//            arcTo(
+//                Rect(segmentWidth.toPx(),
+//                    segmentWidth.toPx(),
+//                    (2f * externalRadius - segmentWidth).toPx(),
+//                    (2f * externalRadius - segmentWidth).toPx()),
+//                startAngleDegrees + sweepAngleDegrees,
+//                -sweepAngleDegrees,
+//                false)
+//        }, Color.Red)
+
+
     }
 }
 
 @Composable
 fun SegmentScreen() {
-    SegmentView(100.dp, 20.dp, -150f, 120f)
+    SegmentView(100.dp, 40.dp, -150f, 120f)
 }
 
 @Composable
@@ -70,40 +72,26 @@ fun SegmentView(externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, 
                 .width(width)
                 .height(height)
                 .background(Color.Magenta)
-                .graphicsLayer {
-                    clip = true
-                    shape = GenericShape { size: Size, _ ->
-                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
-                        arcTo(
-                            Rect(segmentWidth.toPx(),
-                                segmentWidth.toPx(),
-                                (2f * externalRadius - segmentWidth).toPx(),
-                                (2f * externalRadius - segmentWidth).toPx()),
-                            startAngleDegrees + sweepAngleDegrees,
-                            -sweepAngleDegrees,
-                            false)
-
-//                        arcTo(Rect(0f, 200f, 900f, 800f), -150f, 180f, false)
-
-
-
-//                        lineTo( 150f, 0f)
-//                        quadraticTo(width - gapSizePx, 0f, width - gapSizePx, gapCornerRadiusPx)
+//                .graphicsLayer {
+//                    clip = true
+//                    shape = GenericShape { size: Size, _ ->
+//                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
 //
-//                        quadraticTo(width - concavityFactor*gapSizePx, concavityFactor*gapSizePx, width - gapCornerRadiusPx, gapSizePx)
+////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), -90f, 90f, false)
+////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), 0f, 90f, false)
 //
-//                        quadraticTo(width, gapSizePx, width, gapSizePx + gapCornerRadiusPx)
-
-//                        lineTo(150f, 40f)
-////                        quadraticTo(width, height, width - cornerRadiusPx, height)
-//
-//                        lineTo(-150f, 40f)
-////                        quadraticTo(0f, height, 0f, height - cornerRadiusPx)
-//
-//                        lineTo(-150f, 0f)
-                    }
-                }
+//                        arcTo(
+//                            Rect(segmentWidth.toPx(),
+//                                segmentWidth.toPx(),
+//                                (2f * externalRadius - segmentWidth).toPx(),
+//                                (2f * externalRadius - segmentWidth).toPx()),
+//                            startAngleDegrees + sweepAngleDegrees,
+//                            -sweepAngleDegrees,
+//                            false)
+//                    }
+//                }
                 .background(Color.LightGray),
+                    externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees
         )
     }
 }
