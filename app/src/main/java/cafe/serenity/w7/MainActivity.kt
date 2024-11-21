@@ -77,9 +77,8 @@ fun NavGraph(navController: NavHostController) {
             WondersInGameScreen(navController)
         }
         composable<Route.DragRoute> {
-//            DragScreen()
-//            CircularScreen()
             SegmentScreen()
+//            CircularScreen()
         }
         composable<Route.SegmentRoute> {
             SegmentScreen()

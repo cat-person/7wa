@@ -1,20 +1,40 @@
 package cafe.serenity.w7.ui
 
+import android.content.ClipData
 import android.graphics.PointF
+import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -27,6 +47,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ObserverModifierNode
@@ -41,10 +62,35 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+var globalOffset by mutableStateOf(Offset(100f, 0f))
+
 @Composable
-fun Segment(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
-    Canvas(modifier = modifier
-        ) {
+fun Segment(modifier: Modifier,
+            externalRadius: Dp,
+            segmentWidth: Dp,
+            startAngleDegrees: Float,
+            sweepAngleDegrees: Float) {
+    Canvas(modifier
+            .width(200.dp)
+            .height(200.dp)
+//            .pointerInput(Unit) {
+//                detectDragGestures { change, dragAmount ->
+//                    change.consume()
+//                    globalOffset.x += dragAmount.x
+//                    globalOffset.y += dragAmount.y
+//                }
+//            }
+            .draggable(
+                orientation = Orientation.Horizontal,
+                state = rememberDraggableState { delta ->
+                    globalOffset = Offset(globalOffset.x + delta, 0f)
+                }
+            )
+            .graphicsLayer {
+                translationX = globalOffset.x
+                translationY = globalOffset.y
+            }
+            .background(Color.Magenta)) {
 
         val width = externalRadius * 2f
         val height = externalRadius * 2f
@@ -96,106 +142,18 @@ fun Segment(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startAngle
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SegmentScreen() {
-    SegmentView(100.dp, 40.dp, -150f, 120f)
+
+    SegmentView(Modifier,
+//        .dragAndDropTarget({throw RuntimeException("AAAAA")}, dndTarget)
+        100.dp, 40.dp, -150f, 120f)
 }
 
 @Composable
-fun SegmentView(externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center,
-    ) {
-        val width = externalRadius * 2f
-        val height = externalRadius * 2f
-        Segment(
-            modifier = Modifier
-                .segmentDimens(externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees)
-                .background(Color.Magenta)
-//                .graphicsLayer {
-//                    clip = true
-//                    shape = GenericShape { size: Size, _ ->
-//                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
-//
-////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), -90f, 90f, false)
-////                        arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), 0f, 90f, false)
-//
-//                        arcTo(
-//                            Rect(segmentWidth.toPx(),
-//                                segmentWidth.toPx(),
-//                                (2f * externalRadius - segmentWidth).toPx(),
-//                                (2f * externalRadius - segmentWidth).toPx()),
-//                            startAngleDegrees + sweepAngleDegrees,
-//                            -sweepAngleDegrees,
-//                            false)
-//                    }
-//                }
-                .background(Color.LightGray),
-                    externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees
-        )
+fun SegmentView(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
+    Box(modifier = modifier.background(Color.LightGray)) {
+        Segment(modifier, externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees)
     }
 }
-
-private class SegmentDimensElement(private val externalRadius: Dp, private val segmentWidth: Dp, private val startAngleDegrees: Float, private val sweepAngleDegrees: Float): ModifierNodeElement<SegmentDimensNode>() {
-    override fun create(): SegmentDimensNode {
-        return SegmentDimensNode(externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees)
-    }
-
-    override fun update(node: SegmentDimensNode) {
-        node.externalRadius = externalRadius
-        node.segmentWidth = segmentWidth
-        node.startAngleDegrees = startAngleDegrees
-        node.sweepAngleDegrees = sweepAngleDegrees
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SegmentDimensElement
-
-        if (externalRadius != other.externalRadius) return false
-        if (segmentWidth != other.segmentWidth) return false
-        if (startAngleDegrees != other.startAngleDegrees) return false
-        if (sweepAngleDegrees != other.sweepAngleDegrees) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = externalRadius.hashCode()
-        result = 31 * result + segmentWidth.hashCode()
-        result = 31 * result + startAngleDegrees.hashCode()
-        result = 31 * result + sweepAngleDegrees.hashCode()
-        return result
-    }
-}
-
-private class SegmentDimensNode(
-    var externalRadius: Dp,
-    var segmentWidth: Dp,
-    var startAngleDegrees: Float,
-    var sweepAngleDegrees: Float
-) : Modifier.Node(), ObserverModifierNode {
-
-    override fun onObservedReadsChanged() {
-
-    }
-}
-
-@Stable
-fun Modifier.segmentDimens(
-    externalRadius: Dp,
-    segmentWidth: Dp,
-    startAngleDegrees: Float,
-    sweepAngleDegrees: Float): Modifier {
-    return this.then(
-        SegmentDimensElement(
-            externalRadius,
-            segmentWidth,
-            startAngleDegrees,
-            sweepAngleDegrees)
-    )
-}
-
