@@ -74,16 +74,10 @@ fun Segment(modifier: Modifier,
             segmentWidth: Dp,
             startAngleDegrees: Float,
             sweepAngleDegrees: Float) {
+
     Canvas(modifier
             .width(200.dp)
             .height(200.dp)
-//            .pointerInput(Unit) {
-//                detectDragGestures { change, dragAmount ->
-//                    change.consume()
-//                    globalOffset.x += dragAmount.x
-//                    globalOffset.y += dragAmount.y
-//                }
-//            }
             .draggable2D(
                 state = rememberDraggable2DState { delta ->
                     globalOffset += delta
@@ -95,52 +89,7 @@ fun Segment(modifier: Modifier,
             }
             .background(Color.Magenta)) {
 
-        val width = externalRadius * 2f
-        val height = externalRadius * 2f
-
-        val internalRadius = externalRadius - segmentWidth
-
-        // Corners
-        val cornerRadius = segmentWidth.toPx() / 4f
-
-        val endAngleDegrees = startAngleDegrees + sweepAngleDegrees
-
-        val startRotationVector = PointF(cos(startAngleDegrees * 3.14f / 180f), sin(startAngleDegrees * 3.14f / 180f))
-        val endRotationVector = PointF(cos(endAngleDegrees * 3.14f / 180f), sin(endAngleDegrees * 3.14f / 180f))
-
-        drawPath(Path().apply {
-            arcTo(Rect(0f, 0f, width.toPx(), height.toPx()), startAngleDegrees, sweepAngleDegrees, false)
-
-            arcTo(Rect(
-                Offset((externalRadius.toPx() - cornerRadius + (externalRadius.toPx() - cornerRadius) * endRotationVector.x),
-                    externalRadius.toPx() - cornerRadius + (externalRadius.toPx() - cornerRadius) * endRotationVector.y),
-                Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees, 90f, false)
-
-            arcTo(Rect(
-                Offset(externalRadius.toPx() - cornerRadius + (internalRadius.toPx() + cornerRadius) * endRotationVector.x,
-                    externalRadius.toPx() - cornerRadius + (internalRadius.toPx() + cornerRadius) * endRotationVector.y),
-                Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees + 90f, 90f, false)
-
-            arcTo(
-                Rect(segmentWidth.toPx(),
-                    segmentWidth.toPx(),
-                    (2f * externalRadius - segmentWidth).toPx(),
-                    (2f * externalRadius - segmentWidth).toPx()),
-                startAngleDegrees + sweepAngleDegrees,
-                -sweepAngleDegrees,
-                false)
-
-            arcTo(Rect(
-                Offset(externalRadius.toPx() - cornerRadius + (internalRadius.toPx() + cornerRadius) * startRotationVector.x,
-                    externalRadius.toPx() - cornerRadius + (internalRadius.toPx() + cornerRadius) * startRotationVector.y),
-                Size(2f * cornerRadius, 2f * cornerRadius)), 180f + startAngleDegrees, 90f, false)
-
-            arcTo(Rect(
-                Offset((externalRadius.toPx() - cornerRadius + (externalRadius.toPx() - cornerRadius) * startRotationVector.x),
-                    externalRadius.toPx() - cornerRadius + (externalRadius.toPx() - cornerRadius) * startRotationVector.y),
-                Size(2f * cornerRadius, 2f * cornerRadius)), startAngleDegrees - 90f, 90f, false)
-
-        }, Color.Red)
+        drawPath(getShape(externalRadius.toPx(), segmentWidth.toPx(), startAngleDegrees, sweepAngleDegrees, globalOffset.y / 200.dp.toPx()), Color.Red)
     }
 
 }
@@ -149,14 +98,61 @@ fun Segment(modifier: Modifier,
 @Composable
 fun SegmentScreen() {
 
-    SegmentView(Modifier,
-//        .dragAndDropTarget({throw RuntimeException("AAAAA")}, dndTarget)
-        100.dp, 40.dp, -150f, 120f)
+    SegmentView(Modifier, 100.dp, 40.dp, -150f, 120f)
 }
 
 @Composable
 fun SegmentView(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startAngleDegrees: Float, sweepAngleDegrees: Float) {
     Box(modifier = modifier.background(Color.LightGray)) {
         Segment(modifier, externalRadius, segmentWidth, startAngleDegrees, sweepAngleDegrees)
+    }
+}
+
+fun getShape(externalRadius: Float, segmentWidth: Float, startAngleDegrees: Float, sweepAngleDegrees: Float, roundyCoef: Float): Path {
+    val width = externalRadius * 2f
+    val height = externalRadius * 2f
+
+    val internalRadius = externalRadius - segmentWidth
+
+    // Corners
+    val cornerRadius = segmentWidth * roundyCoef / 2f
+
+    val endAngleDegrees = startAngleDegrees + sweepAngleDegrees
+
+    val startRotationVector = PointF(cos(startAngleDegrees * 3.14f / 180f), sin(startAngleDegrees * 3.14f / 180f))
+    val endRotationVector = PointF(cos(endAngleDegrees * 3.14f / 180f), sin(endAngleDegrees * 3.14f / 180f))
+
+    return Path().apply {
+        arcTo(Rect(0f, 0f, width, height), startAngleDegrees, sweepAngleDegrees, false)
+
+        arcTo(Rect(
+            Offset((externalRadius - cornerRadius + (externalRadius - cornerRadius) * endRotationVector.x),
+                externalRadius - cornerRadius + (externalRadius- cornerRadius) * endRotationVector.y),
+            Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees, 90f, false)
+
+        arcTo(Rect(
+            Offset(externalRadius - cornerRadius + (internalRadius + cornerRadius) * endRotationVector.x,
+                externalRadius - cornerRadius + (internalRadius + cornerRadius) * endRotationVector.y),
+            Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees + 90f, 90f, false)
+
+        arcTo(
+            Rect(segmentWidth,
+                segmentWidth,
+                (2f * externalRadius - segmentWidth),
+                (2f * externalRadius - segmentWidth)),
+            startAngleDegrees + sweepAngleDegrees,
+            -sweepAngleDegrees,
+            false)
+
+        arcTo(Rect(
+            Offset(externalRadius - cornerRadius + (internalRadius + cornerRadius) * startRotationVector.x,
+                externalRadius - cornerRadius + (internalRadius + cornerRadius) * startRotationVector.y),
+            Size(2f * cornerRadius, 2f * cornerRadius)), 180f + startAngleDegrees, 90f, false)
+
+        arcTo(Rect(
+            Offset((externalRadius - cornerRadius + (externalRadius - cornerRadius) * startRotationVector.x),
+                externalRadius- cornerRadius + (externalRadius - cornerRadius) * startRotationVector.y),
+            Size(2f * cornerRadius, 2f * cornerRadius)), startAngleDegrees - 90f, 90f, false)
+
     }
 }
