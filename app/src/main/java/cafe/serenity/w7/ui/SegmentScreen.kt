@@ -8,11 +8,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
+import androidx.compose.foundation.gestures.Draggable2DState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.draggable2D
+import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,6 +67,7 @@ import kotlin.math.sin
 
 var globalOffset by mutableStateOf(Offset(100f, 0f))
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Segment(modifier: Modifier,
             externalRadius: Dp,
@@ -80,10 +84,9 @@ fun Segment(modifier: Modifier,
 //                    globalOffset.y += dragAmount.y
 //                }
 //            }
-            .draggable(
-                orientation = Orientation.Horizontal,
-                state = rememberDraggableState { delta ->
-                    globalOffset = Offset(globalOffset.x + delta, 0f)
+            .draggable2D(
+                state = rememberDraggable2DState { delta ->
+                    globalOffset += delta
                 }
             )
             .graphicsLayer {
