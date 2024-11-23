@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 
 var globalOffset by mutableStateOf(Offset(100f, 0f))
@@ -89,7 +90,9 @@ fun Segment(modifier: Modifier,
             }
             .background(Color.Magenta)) {
 
-        drawPath(getShape(externalRadius.toPx(), segmentWidth.toPx(), startAngleDegrees, sweepAngleDegrees, globalOffset.y / 200.dp.toPx()), Color.Red)
+        val meow = min(globalOffset.y / 200.dp.toPx(), 1f)
+
+        drawPath(getShape(externalRadius.toPx(), segmentWidth.toPx(), startAngleDegrees, sweepAngleDegrees, meow), Color.Red)
     }
 
 }
@@ -108,51 +111,53 @@ fun SegmentView(modifier: Modifier, externalRadius: Dp, segmentWidth: Dp, startA
     }
 }
 
-fun getShape(externalRadius: Float, segmentWidth: Float, startAngleDegrees: Float, sweepAngleDegrees: Float, roundyCoef: Float): Path {
+fun getShape(externalRadius: Float, segmentWidth: Float, centerAngleDegrees: Float, sweepAngleDegrees: Float, roundyCoef: Float): Path {
     val width = externalRadius * 2f
     val height = externalRadius * 2f
 
     val internalRadius = externalRadius - segmentWidth
 
     // Corners
-    val cornerRadius = segmentWidth * roundyCoef / 2f
+    val cornerRadius = segmentWidth * (1 + roundyCoef) / 4f
 
-    val endAngleDegrees = startAngleDegrees + sweepAngleDegrees
+    val effectiveSweepAngle = sweepAngleDegrees * (1 - roundyCoef)
+    val effectiveStartAngleDegrees = centerAngleDegrees -effectiveSweepAngle / 2f
+    val effectiveEndAngleDegrees = centerAngleDegrees + effectiveSweepAngle / 2f
 
-    val startRotationVector = PointF(cos(startAngleDegrees * 3.14f / 180f), sin(startAngleDegrees * 3.14f / 180f))
-    val endRotationVector = PointF(cos(endAngleDegrees * 3.14f / 180f), sin(endAngleDegrees * 3.14f / 180f))
+    val startRotationVector = PointF(cos(effectiveStartAngleDegrees * 3.14f / 180f), sin(effectiveStartAngleDegrees * 3.14f / 180f))
+    val endRotationVector = PointF(cos(effectiveEndAngleDegrees * 3.14f / 180f), sin(effectiveEndAngleDegrees * 3.14f / 180f))
 
     return Path().apply {
-        arcTo(Rect(0f, 0f, width, height), startAngleDegrees, sweepAngleDegrees, false)
+        arcTo(Rect(0f, 0f, width, height), effectiveStartAngleDegrees, effectiveSweepAngle, false)
 
         arcTo(Rect(
             Offset((externalRadius - cornerRadius + (externalRadius - cornerRadius) * endRotationVector.x),
                 externalRadius - cornerRadius + (externalRadius- cornerRadius) * endRotationVector.y),
-            Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees, 90f, false)
+            Size(2f * cornerRadius, 2f * cornerRadius)), effectiveEndAngleDegrees, 90f, false)
 
         arcTo(Rect(
             Offset(externalRadius - cornerRadius + (internalRadius + cornerRadius) * endRotationVector.x,
                 externalRadius - cornerRadius + (internalRadius + cornerRadius) * endRotationVector.y),
-            Size(2f * cornerRadius, 2f * cornerRadius)), endAngleDegrees + 90f, 90f, false)
+            Size(2f * cornerRadius, 2f * cornerRadius)), effectiveEndAngleDegrees + 90f, 90f, false)
 
         arcTo(
             Rect(segmentWidth,
                 segmentWidth,
                 (2f * externalRadius - segmentWidth),
                 (2f * externalRadius - segmentWidth)),
-            startAngleDegrees + sweepAngleDegrees,
-            -sweepAngleDegrees,
+            effectiveStartAngleDegrees + effectiveSweepAngle,
+            -effectiveSweepAngle,
             false)
 
         arcTo(Rect(
             Offset(externalRadius - cornerRadius + (internalRadius + cornerRadius) * startRotationVector.x,
                 externalRadius - cornerRadius + (internalRadius + cornerRadius) * startRotationVector.y),
-            Size(2f * cornerRadius, 2f * cornerRadius)), 180f + startAngleDegrees, 90f, false)
+            Size(2f * cornerRadius, 2f * cornerRadius)), 180f + effectiveStartAngleDegrees, 90f, false)
 
         arcTo(Rect(
             Offset((externalRadius - cornerRadius + (externalRadius - cornerRadius) * startRotationVector.x),
                 externalRadius- cornerRadius + (externalRadius - cornerRadius) * startRotationVector.y),
-            Size(2f * cornerRadius, 2f * cornerRadius)), startAngleDegrees - 90f, 90f, false)
+            Size(2f * cornerRadius, 2f * cornerRadius)), effectiveStartAngleDegrees - 90f, 90f, false)
 
     }
 }
