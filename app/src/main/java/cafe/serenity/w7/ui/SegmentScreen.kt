@@ -101,7 +101,7 @@ fun Segment(modifier: Modifier,
 @Composable
 fun SegmentScreen() {
 
-    SegmentView(Modifier, 100.dp, 40.dp, -150f, 120f)
+    SegmentView(Modifier, 100.dp, 40.dp, -90f, 120f)
 }
 
 @Composable
